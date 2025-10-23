@@ -1,5 +1,5 @@
 User-Agent: *
 Allow: /
 
-Host: https://chillops.io
-Sitemap: https://chillops.io/sitemap.xml
+Host: https://gtashnikn1.github.io
+Sitemap: https://gtashnikn1.github.io/sitemap.xml
