@@ -1,0 +1,5 @@
+User-Agent: *
+Allow: /
+
+Host: https://gtashnikn1.github.io
+Sitemap: https://gtashnikn1.github.io/sitemap.xml
