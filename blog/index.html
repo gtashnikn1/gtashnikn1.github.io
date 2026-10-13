@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog — Nikita Diubachev</title>
+    <meta name="description" content="Notes and writeups by Nikita Diubachev on practical infrastructure, networking, Linux, and DevOps.">
+    <meta name="author" content="Nikita Diubachev">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://gtashnikn1.github.io/blog/">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Nikita Diubachev — DevOps &amp; Platform Engineer">
+    <meta property="og:title" content="Blog — Nikita Diubachev">
+    <meta property="og:description" content="Notes and writeups on practical infrastructure, networking, Linux, and DevOps.">
+    <meta property="og:url" content="https://gtashnikn1.github.io/blog/">
+    <meta property="og:image" content="https://gtashnikn1.github.io/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:locale" content="en_US">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Blog — Nikita Diubachev">
+    <meta name="twitter:description" content="Notes and writeups on practical infrastructure, networking, Linux, and DevOps.">
+    <meta name="twitter:image" content="https://gtashnikn1.github.io/og-image.png">
+
+    <!-- Theme / PWA -->
+    <meta name="theme-color" content="#07050b">
+    <link rel="manifest" href="/manifest.json">
+
+    <!-- Icons -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%2307050b'/%3E%3Ctext x='50' y='68' font-size='52' text-anchor='middle' fill='%23c084fc' font-family='monospace'%3E%26gt%3B_%3C/text%3E%3C/svg%3E">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png">
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-primary: #07050b;
+            --bg-secondary: #0d0914;
+            --bg-card: #120d1a;
+            --bg-card-hover: #1a1226;
+            --accent-cyan: #c084fc;
+            --accent-purple: #a78bfa;
+            --accent-pink: #e879f9;
+            --accent-green: #10b981;
+            --accent-alert: #fb7185;
+            --text-primary: #f0f0f5;
+            --text-secondary: #a0a0b0;
+            --text-muted: #606070;
+            --border: rgba(192, 132, 252, 0.14);
+            --glow-cyan: rgba(192, 132, 252, 0.35);
+            --glow-purple: rgba(139, 92, 246, 0.32);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+        #particles-canvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0; pointer-events: none;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); }
+        ::-webkit-scrollbar-thumb { background: var(--accent-cyan); border-radius: 3px; }
+        .scroll-progress {
+            position: fixed; top: 0; left: 0; height: 2px;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple), var(--accent-pink));
+            z-index: 10000; width: 0%; transition: width 0.1s;
+        }
+        header {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center;
+            background: rgba(7,5,11,0.82); backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border); transition: all 0.3s ease;
+        }
+        header.scrolled { padding: 0.6rem 2rem; background: rgba(7,5,11,0.96); }
+        .logo {
+            font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; font-weight: 600;
+            color: var(--accent-cyan); text-shadow: 0 0 20px var(--glow-cyan);
+            text-decoration: none; cursor: pointer;
+        }
+        .logo span { color: var(--text-primary); }
+        nav { display: flex; gap: 2rem; align-items: center; }
+        nav a {
+            color: var(--text-secondary); text-decoration: none; font-size: 0.85rem;
+            font-weight: 500; transition: all 0.3s ease; position: relative;
+        }
+        nav a::after {
+            content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 2px;
+            background: var(--accent-cyan); transition: width 0.3s ease;
+            box-shadow: 0 0 10px var(--glow-cyan);
+        }
+        nav a:hover { color: var(--accent-cyan); }
+        nav a:hover::after { width: 100%; }
+        nav a.current { color: var(--accent-cyan); }
+        nav a.current::after { width: 100%; }
+
+        .glow-orb { position: fixed; border-radius: 50%; filter: blur(90px); opacity: 0.18; pointer-events: none; z-index: 0; }
+        .glow-orb-1 { width: 480px; height: 480px; background: radial-gradient(circle, var(--accent-cyan), transparent 70%); top: 5%; left: -12%; animation: aurora1 16s ease-in-out infinite; }
+        .glow-orb-2 { width: 420px; height: 420px; background: radial-gradient(circle, var(--accent-purple), transparent 70%); top: 45%; right: -8%; animation: aurora2 20s ease-in-out infinite; }
+        .glow-orb-3 { width: 360px; height: 360px; background: radial-gradient(circle, var(--accent-pink), transparent 70%); bottom: 8%; left: 25%; animation: aurora3 18s ease-in-out infinite; }
+        .glow-orb-4 { width: 400px; height: 400px; background: radial-gradient(circle, var(--accent-purple), transparent 70%); top: 25%; left: 45%; animation: aurora4 22s ease-in-out infinite; opacity: 0.1; }
+        @keyframes aurora1 {
+            0%, 100% { transform: translate(0,0) scale(1); }
+            25% { transform: translate(60px,-40px) scale(1.1); }
+            50% { transform: translate(20px,50px) scale(0.95); }
+            75% { transform: translate(-40px,-20px) scale(1.05); }
+        }
+        @keyframes aurora2 {
+            0%, 100% { transform: translate(0,0) scale(1); }
+            30% { transform: translate(-50px,40px) scale(1.08); }
+            60% { transform: translate(30px,-30px) scale(0.92); }
+        }
+        @keyframes aurora3 {
+            0%, 100% { transform: translate(0,0) scale(1); }
+            40% { transform: translate(50px,30px) scale(1.12); }
+            70% { transform: translate(-30px,-40px) scale(0.9); }
+        }
+        @keyframes aurora4 {
+            0%, 100% { transform: translate(0,0) scale(1); opacity: 0.12; }
+            50% { transform: translate(-60px,60px) scale(1.15); opacity: 0.2; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .glow-orb { animation: none !important; }
+        }
+
+        /* ========== BLOG INDEX ========== */
+        .blog { position: relative; z-index: 1; max-width: 960px; margin: 0 auto; padding: 8rem 2rem 4rem; min-height: 100vh; }
+        .blog-title {
+            font-size: clamp(1.7rem, 4.5vw, 2.4rem); font-weight: 800; text-align: center;
+            background: linear-gradient(135deg, var(--text-primary), var(--accent-cyan));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+            position: relative; display: inline-block; left: 50%; transform: translateX(-50%);
+        }
+        .blog-title::after {
+            content: ''; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%);
+            width: 60px; height: 3px; border-radius: 2px;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple));
+        }
+        .blog-subtitle { text-align: center; color: var(--text-secondary); margin: 1.6rem 0 3rem; font-size: 0.9rem; }
+        .blog-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; max-width: 900px; margin: 0 auto; }
+        .blog-card {
+            display: block; text-decoration: none;
+            background: linear-gradient(160deg, rgba(255,255,255,0.05), rgba(255,255,255,0.015));
+            backdrop-filter: blur(18px) saturate(160%); -webkit-backdrop-filter: blur(18px) saturate(160%);
+            border: 1px solid rgba(255,255,255,0.09); border-radius: 16px;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 8px 32px rgba(0,0,0,0.3);
+            padding: 1.8rem; transition: all 0.4s ease; position: relative; overflow: hidden;
+        }
+        .blog-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple));
+            transform: scaleX(0); transition: transform 0.4s ease;
+        }
+        .blog-card:hover::before { transform: scaleX(1); }
+        .blog-card:hover { transform: translateY(-5px); border-color: var(--accent-cyan); box-shadow: 0 10px 40px rgba(192,132,252,0.14); }
+        .blog-card-date { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--accent-cyan); margin-bottom: 0.6rem; }
+        .blog-card-title { font-weight: 700; font-size: 1.15rem; color: var(--text-primary); margin-bottom: 0.6rem; line-height: 1.35; }
+        .blog-card-desc { font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 0.9rem; }
+        .blog-card .blog-card-tags { margin-top: 0; }
+        .blog-card-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+        .blog-tag {
+            font-size: 0.7rem; padding: 0.2rem 0.6rem;
+            background: rgba(192,132,252,0.12); border: 1px solid rgba(192,132,252,0.24);
+            border-radius: 4px; color: var(--accent-cyan); font-family: 'JetBrains Mono', monospace;
+        }
+        .blog-card-more { display: inline-block; margin-top: 1.1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--accent-cyan); }
+
+        /* Spotlight: soft cursor-following highlight on glass cards */
+        .spotlight { position: relative; }
+        .spotlight::after {
+            content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+            background: radial-gradient(circle at var(--sx,50%) var(--sy,50%), rgba(192,132,252,0.16), transparent 55%);
+            opacity: 0; transition: opacity 0.35s ease; z-index: -1;
+        }
+        .spotlight:hover::after { opacity: 1; }
+        @media (pointer: coarse) { .spotlight::after { display: none; } }
+
+        footer { text-align: center; padding: 3rem 2rem; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.8rem; position: relative; z-index: 1; }
+        .footer-status { font-family: 'JetBrains Mono', monospace; display: inline-flex; align-items: center; gap: 0.5rem; letter-spacing: 0.02em; flex-wrap: wrap; justify-content: center; max-width: 90vw; }
+        .footer-tags { font-size: 0.72rem; }
+
+        @media (max-width: 900px) {
+            nav { display: none; }
+        }
+        @media (max-width: 640px) {
+            .blog { padding: 6.5rem 1rem 3rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Ambient background -->
+    <div class="glow-orb glow-orb-1"></div>
+    <div class="glow-orb glow-orb-2"></div>
+    <div class="glow-orb glow-orb-3"></div>
+    <div class="glow-orb glow-orb-4"></div>
+    <canvas id="particles-canvas"></canvas>
+    <div class="scroll-progress" id="scroll-progress"></div>
+
+    <header id="header">
+        <a href="/" class="logo" aria-label="Home">nikita@devops<span>~</span></a>
+        <nav aria-label="Primary navigation">
+            <a href="/">Home</a>
+            <a href="/#about">About</a>
+            <a href="/#experience">Experience</a>
+            <a href="/#skills">Skills</a>
+            <a href="/blog/" class="current">Blog</a>
+            <a href="/#contact">Contact</a>
+        </nav>
+    </header>
+
+    <main>
+        <div class="blog">
+            <h1 class="blog-title">Blog</h1>
+            <p class="blog-subtitle">notes / writeups / field manuals</p>
+            <div class="blog-grid">
+                <a href="/blog/port-forwarding/" class="blog-card spotlight">
+                    <div class="blog-card-date">2025-10-23</div>
+                    <div class="blog-card-title">Port forwarding in Linux and Windows</div>
+                    <div class="blog-card-desc">Expose a localhost-only endpoint to other machines with netsh portproxy on Windows and an SSH tunnel on Linux — explained flag by flag.</div>
+                    <div class="blog-card-tags">
+                        <span class="blog-tag">devops</span>
+                        <span class="blog-tag">network</span>
+                        <span class="blog-tag">linux</span>
+                    </div>
+                    <span class="blog-card-more">read post →</span>
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p class="footer-status"><span class="footer-tags">#DevOps #Cloud #Kubernetes #Terraform #Linux</span></p>
+        <p style="margin-top:0.5rem; font-size:0.7rem; color:#ffffff;">© 2026 Nikita Diubachev</p>
+    </footer>
+
+    <script>
+        // ========== PARTICLES ==========
+        const canvas = document.getElementById('particles-canvas');
+        const ctx = canvas.getContext('2d');
+        let mouseX = -1000, mouseY = -1000;
+        const particles = [];
+
+        function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.size = Math.random() * 3 + 2;
+                this.opacity = Math.random() * 0.5 + 0.1;
+                this.rotation = Math.random() * Math.PI * 2;
+                this.rotationSpeed = (Math.random() - 0.5) * 0.02;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.rotation += this.rotationSpeed;
+                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+                const dx = mouseX - this.x;
+                const dy = mouseY - this.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                if (dist < 150) {
+                    this.vx -= dx * 0.0005;
+                    this.vy -= dy * 0.0005;
+                }
+            }
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+                ctx.beginPath();
+                const r = this.size;
+                ctx.moveTo(0, -r);
+                ctx.lineTo(r * 0.87, r * 0.5);
+                ctx.lineTo(-r * 0.87, r * 0.5);
+                ctx.closePath();
+                ctx.fillStyle = `rgba(192, 132, 252, ${this.opacity})`;
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        for (let i = 0; i < 80; i++) particles.push(new Particle());
+
+        function drawConnections() {
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    if (dist < 120) {
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.strokeStyle = `rgba(192, 132, 252, ${0.1 * (1 - dist/120)})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            drawConnections();
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+
+        window.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
+
+        // ========== SCROLL PROGRESS ==========
+        const scrollProgress = document.getElementById('scroll-progress');
+        window.addEventListener('scroll', () => {
+            const scrolled = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
+            scrollProgress.style.width = (scrolled * 100) + '%';
+        });
+
+        // ========== HEADER SCROLL ==========
+        const header = document.getElementById('header');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) header.classList.add('scrolled');
+            else header.classList.remove('scrolled');
+        });
+
+        // ========== SPOTLIGHT CARDS ==========
+        (function () {
+            if (!window.matchMedia('(pointer: fine)').matches) return;
+            document.querySelectorAll('.spotlight').forEach((el) => {
+                el.addEventListener('mousemove', (e) => {
+                    const rect = el.getBoundingClientRect();
+                    const x = ((e.clientX - rect.left) / rect.width) * 100;
+                    const y = ((e.clientY - rect.top) / rect.height) * 100;
+                    el.style.setProperty('--sx', x + '%');
+                    el.style.setProperty('--sy', y + '%');
+                });
+            });
+        })();
+    </script>
+</body>
+</html>
