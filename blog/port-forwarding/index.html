@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Port forwarding in Linux and Windows — Nikita Diubachev</title>
+    <meta name="description" content="How to expose a localhost-only endpoint to other machines: netsh portproxy on Windows and SSH local port forwarding on Linux, explained flag by flag.">
+    <meta name="author" content="Nikita Diubachev">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://gtashnikn1.github.io/blog/port-forwarding/">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Nikita Diubachev — DevOps &amp; Platform Engineer">
+    <meta property="og:title" content="Port forwarding in Linux and Windows">
+    <meta property="og:description" content="Expose a localhost-only endpoint to other machines: netsh portproxy on Windows and SSH port forwarding on Linux, explained flag by flag.">
+    <meta property="og:url" content="https://gtashnikn1.github.io/blog/port-forwarding/">
+    <meta property="og:image" content="https://gtashnikn1.github.io/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:locale" content="en_US">
+    <meta property="article:published_time" content="2025-10-23T00:00:00.000Z">
+    <meta property="article:author" content="Nikita Diubachev">
+    <meta property="article:tag" content="devops">
+    <meta property="article:tag" content="network">
+    <meta property="article:tag" content="linux">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Port forwarding in Linux and Windows">
+    <meta name="twitter:description" content="Expose a localhost-only endpoint to other machines: netsh portproxy on Windows and SSH port forwarding on Linux, explained flag by flag.">
+    <meta name="twitter:image" content="https://gtashnikn1.github.io/og-image.png">
+
+    <!-- Theme / PWA -->
+    <meta name="theme-color" content="#07050b">
+    <link rel="manifest" href="/manifest.json">
+
+    <!-- Icons -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%2307050b'/%3E%3Ctext x='50' y='68' font-size='52' text-anchor='middle' fill='%23c084fc' font-family='monospace'%3E%26gt%3B_%3C/text%3E%3C/svg%3E">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png">
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Structured post data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "Port forwarding in Linux and Windows",
+      "datePublished": "2025-10-23T00:00:00.000Z",
+      "dateModified": "2025-10-23T00:00:00.000Z",
+      "inLanguage": "en",
+      "author": {
+        "@type": "Person",
+        "name": "Nikita Diubachev",
+        "url": "https://gtashnikn1.github.io/"
+      },
+      "keywords": ["devops", "network", "linux"],
+      "mainEntityOfPage": "https://gtashnikn1.github.io/blog/port-forwarding/"
+    }
+    </script>
+    <style>
+        :root {
+            --bg-primary: #07050b;
+            --bg-secondary: #0d0914;
+            --bg-card: #120d1a;
+            --bg-card-hover: #1a1226;
+            --accent-cyan: #c084fc;
+            --accent-purple: #a78bfa;
+            --accent-pink: #e879f9;
+            --accent-green: #10b981;
+            --accent-alert: #fb7185;
+            --text-primary: #f0f0f5;
+            --text-secondary: #a0a0b0;
+            --text-muted: #606070;
+            --border: rgba(192, 132, 252, 0.14);
+            --glow-cyan: rgba(192, 132, 252, 0.35);
+            --glow-purple: rgba(139, 92, 246, 0.32);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+        #particles-canvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0; pointer-events: none;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); }
+        ::-webkit-scrollbar-thumb { background: var(--accent-cyan); border-radius: 3px; }
+        .scroll-progress {
+            position: fixed; top: 0; left: 0; height: 2px;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple), var(--accent-pink));
+            z-index: 10000; width: 0%; transition: width 0.1s;
+        }
+        header {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center;
+            background: rgba(7,5,11,0.82); backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border); transition: all 0.3s ease;
+        }
+        header.scrolled { padding: 0.6rem 2rem; background: rgba(7,5,11,0.96); }
+        .logo {
+            font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; font-weight: 600;
+            color: var(--accent-cyan); text-shadow: 0 0 20px var(--glow-cyan);
+            text-decoration: none; cursor: pointer;
+        }
+        .logo span { color: var(--text-primary); }
+        nav { display: flex; gap: 2rem; align-items: center; }
+        nav a {
+            color: var(--text-secondary); text-decoration: none; font-size: 0.85rem;
+            font-weight: 500; transition: all 0.3s ease; position: relative;
+        }
+        nav a::after {
+            content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 2px;
+            background: var(--accent-cyan); transition: width 0.3s ease;
+            box-shadow: 0 0 10px var(--glow-cyan);
+        }
+        nav a:hover { color: var(--accent-cyan); }
+        nav a:hover::after { width: 100%; }
+        nav a.current { color: var(--accent-cyan); }
+        nav a.current::after { width: 100%; }
+
+        .glow-orb { position: fixed; border-radius: 50%; filter: blur(90px); opacity: 0.18; pointer-events: none; z-index: 0; }
+        .glow-orb-1 { width: 480px; height: 480px; background: radial-gradient(circle, var(--accent-cyan), transparent 70%); top: 5%; left: -12%; animation: aurora1 16s ease-in-out infinite; }
+        .glow-orb-2 { width: 420px; height: 420px; background: radial-gradient(circle, var(--accent-purple), transparent 70%); top: 45%; right: -8%; animation: aurora2 20s ease-in-out infinite; }
+        .glow-orb-3 { width: 360px; height: 360px; background: radial-gradient(circle, var(--accent-pink), transparent 70%); bottom: 8%; left: 25%; animation: aurora3 18s ease-in-out infinite; }
+        .glow-orb-4 { width: 400px; height: 400px; background: radial-gradient(circle, var(--accent-purple), transparent 70%); top: 25%; left: 45%; animation: aurora4 22s ease-in-out infinite; opacity: 0.1; }
+        @keyframes aurora1 {
+            0%, 100% { transform: translate(0,0) scale(1); }
+            25% { transform: translate(60px,-40px) scale(1.1); }
+            50% { transform: translate(20px,50px) scale(0.95); }
+            75% { transform: translate(-40px,-20px) scale(1.05); }
+        }
+        @keyframes aurora2 {
+            0%, 100% { transform: translate(0,0) scale(1); }
+            30% { transform: translate(-50px,40px) scale(1.08); }
+            60% { transform: translate(30px,-30px) scale(0.92); }
+        }
+        @keyframes aurora3 {
+            0%, 100% { transform: translate(0,0) scale(1); }
+            40% { transform: translate(50px,30px) scale(1.12); }
+            70% { transform: translate(-30px,-40px) scale(0.9); }
+        }
+        @keyframes aurora4 {
+            0%, 100% { transform: translate(0,0) scale(1); opacity: 0.12; }
+            50% { transform: translate(-60px,60px) scale(1.15); opacity: 0.2; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .glow-orb { animation: none !important; }
+        }
+
+        /* ========== BLOG POST ========== */
+        .post { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; padding: 8rem 2rem 4rem; }
+        .post-crumb {
+            font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: var(--text-muted);
+            margin-bottom: 2rem;
+        }
+        .post-crumb a { color: var(--accent-cyan); text-decoration: none; }
+        .post-crumb a:hover { text-shadow: 0 0 12px var(--glow-cyan); }
+        .post-title {
+            font-size: clamp(1.7rem, 4.5vw, 2.6rem); font-weight: 800; line-height: 1.2;
+            background: linear-gradient(135deg, var(--text-primary), var(--accent-cyan));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+            margin-bottom: 1rem;
+        }
+        .post-meta {
+            display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--text-muted);
+            margin-bottom: 2.5rem;
+        }
+        .post-meta time { color: var(--accent-cyan); }
+        .post-tags { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+        .post-tag {
+            font-size: 0.7rem; padding: 0.2rem 0.6rem;
+            background: rgba(192,132,252,0.12); border: 1px solid rgba(192,132,252,0.24);
+            border-radius: 4px; color: var(--accent-cyan); font-family: 'JetBrains Mono', monospace;
+        }
+        .post-content {
+            background: linear-gradient(160deg, rgba(255,255,255,0.05), rgba(255,255,255,0.015));
+            backdrop-filter: blur(18px) saturate(160%); -webkit-backdrop-filter: blur(18px) saturate(160%);
+            border: 1px solid rgba(255,255,255,0.09); border-radius: 16px;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 8px 32px rgba(0,0,0,0.3);
+            padding: 2.5rem;
+        }
+        .post-content p { color: var(--text-secondary); font-size: 0.98rem; line-height: 1.8; margin-bottom: 1.3rem; }
+        .post-content h1, .post-content h2, .post-content h3 {
+            color: var(--text-primary); font-weight: 700; scroll-margin-top: 100px;
+        }
+        .post-content h1 {
+            font-size: 1.45rem; margin: 2.4rem 0 1.1rem;
+            font-family: 'JetBrains Mono', monospace; letter-spacing: 0.02em;
+        }
+        .post-content h1:first-child { margin-top: 0; }
+        .post-content h2 { font-size: 1.15rem; margin: 1.8rem 0 0.9rem; }
+        .post-content h3 {
+            font-size: 0.95rem; margin: 1.6rem 0 0.8rem;
+            font-family: 'JetBrains Mono', monospace; color: var(--accent-cyan);
+        }
+        .post-content ul { margin: 0 0 1.3rem; padding: 0; list-style: none; }
+        .post-content li { padding-left: 1.2rem; position: relative; margin-bottom: 0.35rem; color: var(--text-secondary); font-size: 0.95rem; }
+        .post-content li::before { content: '▸'; position: absolute; left: 0; color: var(--accent-cyan); }
+        .post-content code {
+            font-family: 'JetBrains Mono', monospace; font-size: 0.85em;
+            background: rgba(192,132,252,0.1); border: 1px solid rgba(192,132,252,0.18);
+            border-radius: 5px; padding: 0.1rem 0.4rem; color: var(--accent-cyan);
+            word-break: break-word;
+        }
+
+        /* terminal-style code blocks, same look as the hero terminal */
+        .term {
+            margin: 0 0 1.4rem; border-radius: 14px; overflow: hidden;
+            background: linear-gradient(160deg, rgba(255,255,255,0.05), rgba(255,255,255,0.015));
+            border: 1px solid rgba(255,255,255,0.09);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 8px 32px rgba(0,0,0,0.3);
+        }
+        .term-bar { display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .term-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .term-dot.r { background: #ff5f56; } .term-dot.y { background: #ffbd2e; } .term-dot.g { background: #27c93f; }
+        .term-title { margin-left: 0.5rem; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--text-muted); }
+        .term-body {
+            padding: 1rem 1.2rem; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem;
+            line-height: 1.7; color: var(--text-secondary); overflow-x: auto; white-space: pre;
+        }
+        .term-body .prompt { color: var(--accent-green); font-weight: 700; }
+        .term-body .cmd { color: var(--text-primary); }
+        .term-body .out { color: var(--text-muted); }
+        .term-body .kw { color: var(--accent-purple); }
+        .term-body .str { color: var(--accent-green); }
+        .term-body .dec { color: var(--accent-cyan); }
+        .term-body .fn { color: var(--accent-cyan); }
+
+        /* command token breakdown */
+        .cmd-ref {
+            background: rgba(192,132,252,0.04); border-left: 3px solid var(--accent-purple);
+            border-radius: 0 8px 8px 0; padding: 0.8rem 1rem; margin-bottom: 0.9rem !important;
+        }
+        .cmd-ref code { display: inline-block; margin-bottom: 0.35rem; font-weight: 600; }
+        .cmd-ref span { display: block; }
+
+        .post-back { margin-top: 2.5rem; text-align: center; }
+        .post-back a {
+            font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;
+            color: var(--accent-cyan); text-decoration: none; transition: text-shadow 0.3s ease;
+        }
+        .post-back a:hover { text-shadow: 0 0 14px var(--glow-cyan); }
+
+        footer { text-align: center; padding: 3rem 2rem; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.8rem; position: relative; z-index: 1; }
+        .footer-status { font-family: 'JetBrains Mono', monospace; display: inline-flex; align-items: center; gap: 0.5rem; letter-spacing: 0.02em; flex-wrap: wrap; justify-content: center; max-width: 90vw; }
+        .footer-tags { font-size: 0.72rem; }
+
+        @media (max-width: 900px) {
+            nav { display: none; }
+        }
+        @media (max-width: 640px) {
+            .post { padding: 6.5rem 1rem 3rem; }
+            .post-content { padding: 1.4rem; }
+            .term-body { font-size: 0.74rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Ambient background -->
+    <div class="glow-orb glow-orb-1"></div>
+    <div class="glow-orb glow-orb-2"></div>
+    <div class="glow-orb glow-orb-3"></div>
+    <div class="glow-orb glow-orb-4"></div>
+    <canvas id="particles-canvas"></canvas>
+    <div class="scroll-progress" id="scroll-progress"></div>
+
+    <header id="header">
+        <a href="/" class="logo" aria-label="Home">nikita@devops<span>~</span></a>
+        <nav aria-label="Primary navigation">
+            <a href="/">Home</a>
+            <a href="/#about">About</a>
+            <a href="/#experience">Experience</a>
+            <a href="/#skills">Skills</a>
+            <a href="/blog/" class="current">Blog</a>
+            <a href="/#contact">Contact</a>
+        </nav>
+    </header>
+
+    <main>
+        <article class="post">
+            <p class="post-crumb"><a href="/">~</a> / <a href="/blog/">blog</a> / port-forwarding</p>
+            <h1 class="post-title">Port forwarding in Linux and Windows</h1>
+            <div class="post-meta">
+                <time datetime="2025-10-23T00:00:00.000Z">2025-10-23</time>
+                <span>·</span>
+                <span>Nikita Diubachev</span>
+                <div class="post-tags">
+                    <span class="post-tag">devops</span>
+                    <span class="post-tag">network</span>
+                    <span class="post-tag">linux</span>
+                </div>
+            </div>
+
+            <div class="post-content">
+                <h1 id="foreword">Foreword</h1>
+                <p>Have you ever worked with a software that for some reason doesn't open connection on all interfaces? I guess no, but I did. This thing silently opened a localhost API endpoint for it's internal calls, but it was never documented anywhere. While I wish they did so, it didn't really stop me to perform requests there from my main machine, and now I'd like to show you how it can be done with almost no pain.</p>
+
+                <h2 id="instruments">Instruments</h2>
+                <ul>
+                    <li>Windows system (Windows 11 in my case)</li>
+                    <li>Linux system (Ubuntu in my case)</li>
+                    <li>Software that creates an endpoint (will provide it here)</li>
+                </ul>
+                <p>For maximum simplicity we will use a python flask app that will give a response to the root page request.</p>
+
+                <h3 id="mainpy">main.py</h3>
+                <div class="term">
+                    <div class="term-bar">
+                        <span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span>
+                        <span class="term-title">main.py</span>
+                    </div>
+                    <div class="term-body"><span class="kw">from</span> flask <span class="kw">import</span> Flask
+
+app = Flask(__name__)
+
+<span class="dec">@app.route(<span class="str">"/"</span>)</span>
+<span class="kw">def</span> <span class="fn">connection_established</span>():
+    <span class="kw">return</span> <span class="str">"you got it!"</span></div>
+                </div>
+                <p>Then let's run this and check its connectivity with curl:</p>
+                <div class="term">
+                    <div class="term-bar">
+                        <span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span>
+                        <span class="term-title">shell</span>
+                    </div>
+                    <div class="term-body"><span class="prompt">$</span> <span class="cmd">python -m flask --app main run</span>
+<span class="out"> * Serving Flask app 'main'
+ * Debug mode: off
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on http://127.0.0.1:5000
+Press CTRL+C to quit
+...</span>
+<span class="prompt">$</span> <span class="cmd">curl localhost:5000</span>
+you got it!</div>
+                </div>
+                <p>Amazing! We just served our HTTP request and got a proper response for it! But, unfortunately, if we try to connect to it from the other machine, we will not receive anything, as you can clearly see, it's being served on our loopback address. So here is the thing we can do.</p>
+
+                <h1 id="windows">Windows</h1>
+                <p>Simply start cmd window with administrative privilege (Win + R and then Ctrl + Shift + Enter) and paste this command:</p>
+                <div class="term">
+                    <div class="term-bar">
+                        <span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span>
+                        <span class="term-title">cmd (admin)</span>
+                    </div>
+                    <div class="term-body"><span class="cmd">netsh interface portproxy add v4tov4 listenaddress=0.0.0.0 listenport=5000 connectaddress=127.0.0.1 connectport=5000</span></div>
+                </div>
+                <p>And that's it! Now you can try to access your endpoint via your IP-address from the other host, and you should be served well! Now let's see what this line actually does:</p>
+                <p class="cmd-ref"><code>netsh</code><span>Short for Network Shell. It’s the Windows command-line utility for viewing and changing network configuration. Every netsh command runs inside that tool.</span></p>
+                <p class="cmd-ref"><code>interface</code><span>This is the netsh context (a subsection of commands). It tells netsh you want to work with networking interface-related features.</span></p>
+                <p class="cmd-ref"><code>portproxy</code><span>A feature inside the interface context that implements a port proxy — it listens on a local port and forwards incoming TCP connections to another address/port.</span></p>
+                <p class="cmd-ref"><code>add</code><span>The action you’re taking: add a new port proxy rule. (Other actions include delete and show.)</span></p>
+                <p class="cmd-ref"><code>v4tov4</code><span>The type of proxy: IPv4 → IPv4. It means the proxy listens on an IPv4 address and forwards to an IPv4 address. (There are also v6tov4, v4tov6 variants for mixed IP families.)</span></p>
+                <p class="cmd-ref"><code>listenaddress=0.0.0.0</code><span>The IP address where portproxy will listen for incoming connections. 0.0.0.0 is the special address that means listen on all IPv4 interfaces (all IPs assigned to the machine).</span></p>
+                <p class="cmd-ref"><code>listenport=5000</code><span>The port number on which the proxy listens locally. Incoming TCP connections to the machine's (any) IPv4 address on port 5000 will be picked up by this proxy.</span></p>
+                <p class="cmd-ref"><code>connectaddress=127.0.0.1</code><span>The destination IP address the proxy forwards traffic to 127.0.0.1, where our app is serving requests.</span></p>
+                <p class="cmd-ref"><code>connectport=5000</code><span>The destination port at connectaddress. So the proxy forwards to port 5000 on 127.0.0.1.</span></p>
+                <p>The only con of this is that we can't serve UDP traffic, so if you came here for it, this is not your choice, unfortunately.</p>
+
+                <h1 id="linux">Linux</h1>
+                <p>Considering you have already started our small python app on linux, we would need to run this command:</p>
+                <div class="term">
+                    <div class="term-bar">
+                        <span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span>
+                        <span class="term-title">shell</span>
+                    </div>
+                    <div class="term-body"><span class="prompt">$</span> <span class="cmd">ssh -g -N -L ~your_interface_address~:5000:127.0.0.1:5000 localhost</span></div>
+                </div>
+                <p>This will create a non-interactive SSH tunnel, which will publish your localhost port to the interface you specify. Let's have a quick run down:</p>
+                <p class="cmd-ref"><code>ssh</code><span>The OpenSSH client program — it creates an SSH connection to a remote SSH server.</span></p>
+                <p class="cmd-ref"><code>-g</code><span>Option to allow remote hosts to connect to local forwarded ports. Though sometimes this can be omitted.</span></p>
+                <p class="cmd-ref"><code>-N</code><span>“No remote command.” Practically meaning you can end port forwarding with simple SIGINT (Ctrl + C).</span></p>
+                <p class="cmd-ref"><code>-L ~your_interface_address~:5000:127.0.0.1:5000</code><span>A little long one, but hang it there: we open the 5000 port to the your_interface_address, which will forward the requests to the 127.0.0.1:5000! Alas, sometimes you can't just open the port to all interfaces (0.0.0.0), so we would need to specify the one that can be accessed externally.</span></p>
+                <p class="cmd-ref"><code>localhost</code><span>Endpoint of our SSH session. Username will be omitted, as we are logining from our machine.</span></p>
+                <p>And we should be able to access our localhost application externally again.</p>
+
+                <h1 id="afterword">Afterword</h1>
+                <p>This way you can quickly expose your localhost applications to the outer world. While this can easy your life in home/development environments, it's not recommended to actually use it in production or heavy-load systems.</p>
+            </div>
+
+            <p class="post-back"><a href="/">$ cd ~</a></p>
+        </article>
+    </main>
+
+    <footer>
+        <p class="footer-status"><span class="footer-tags">#DevOps #Cloud #Kubernetes #Terraform #Linux</span></p>
+        <p style="margin-top:0.5rem; font-size:0.7rem; color:#ffffff;">© 2026 Nikita Diubachev</p>
+    </footer>
+
+    <script>
+        // ========== PARTICLES ==========
+        const canvas = document.getElementById('particles-canvas');
+        const ctx = canvas.getContext('2d');
+        let mouseX = -1000, mouseY = -1000;
+        const particles = [];
+
+        function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.size = Math.random() * 3 + 2;
+                this.opacity = Math.random() * 0.5 + 0.1;
+                this.rotation = Math.random() * Math.PI * 2;
+                this.rotationSpeed = (Math.random() - 0.5) * 0.02;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.rotation += this.rotationSpeed;
+                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+                const dx = mouseX - this.x;
+                const dy = mouseY - this.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                if (dist < 150) {
+                    this.vx -= dx * 0.0005;
+                    this.vy -= dy * 0.0005;
+                }
+            }
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+                ctx.beginPath();
+                const r = this.size;
+                ctx.moveTo(0, -r);
+                ctx.lineTo(r * 0.87, r * 0.5);
+                ctx.lineTo(-r * 0.87, r * 0.5);
+                ctx.closePath();
+                ctx.fillStyle = `rgba(192, 132, 252, ${this.opacity})`;
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        for (let i = 0; i < 80; i++) particles.push(new Particle());
+
+        function drawConnections() {
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    if (dist < 120) {
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.strokeStyle = `rgba(192, 132, 252, ${0.1 * (1 - dist/120)})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            drawConnections();
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+
+        window.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
+
+        // ========== SCROLL PROGRESS ==========
+        const scrollProgress = document.getElementById('scroll-progress');
+        window.addEventListener('scroll', () => {
+            const scrolled = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
+            scrollProgress.style.width = (scrolled * 100) + '%';
+        });
+
+        // ========== HEADER SCROLL ==========
+        const header = document.getElementById('header');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) header.classList.add('scrolled');
+            else header.classList.remove('scrolled');
+        });
+    </script>
+</body>
+</html>
